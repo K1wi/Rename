@@ -22,7 +22,7 @@
             <ListBox x:Name="lstbox_Selected" HorizontalAlignment="Left" Height="209" Margin="10,41,0,0" VerticalAlignment="Top" Width="294" IsEnabled="False" />
             <Label Content="Selected Item" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" FontWeight="Bold" Height="26" Width="94"/>
             <StackPanel Grid.Column="1" HorizontalAlignment="Left" Height="289" Margin="63,41,0,0" VerticalAlignment="Top" Width="160">
-                <Button x:Name="btnRenameSelected" Content="Rename" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22"/>
+                <Button x:Name="btnRenameSelected" Content="Rename" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" Click="btnRenameSelected_Click"/>
                 <Button x:Name="btnDeleteSelected" Content="Delete" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" />
                 <Button x:Name="btnMoveSelected" Content="Move" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" />
                 <Button x:Name="btnNewSelected" Content="New" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22"/>
@@ -38,7 +38,7 @@
                 <Label x:Name="lbl_SeasonNumberSelected" Content="Enter season/episode number" Margin="10,2,0,0" HorizontalAlignment="Left" FontSize="11" FontStyle="Italic"/>
                 <TextBox x:Name="txtbox_NumberSelected" Height="23" TextWrapping="Wrap" Text="TextBox" Margin="10,-5,405,0"/>
             </StackPanel>
-            <Button x:Name="btn_Rename" Content="RENAME SELECTED" Grid.Column="2" HorizontalAlignment="Left" Margin="576,-11,-156,0" VerticalAlignment="Top" Width="135" Height="68" FontWeight="Bold" IsEnabled="False" Click="btn_Rename_Click"/>
+            <Button x:Name="btn_Rename" Content="RENAME SELECTED" Grid.Column="2" HorizontalAlignment="Left" Margin="446,-11,-26,0" VerticalAlignment="Top" Width="135" Height="68" FontWeight="Bold" IsEnabled="False" Click="btn_Rename_Click"/>
             <Label Content="Make changes" Grid.Column="1" HorizontalAlignment="Left" Margin="96,10,0,0" VerticalAlignment="Top" FontWeight="Bold" Height="26" Width="90"/>
         </Grid>
         <Label Content="Current source path" Margin="10,28,0,761" HorizontalAlignment="Left" FontSize="11" FontStyle="Italic"/>

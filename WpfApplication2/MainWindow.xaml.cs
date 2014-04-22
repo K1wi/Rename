@@ -66,31 +66,16 @@ namespace WpfApplication2
             public int[] FK;
             public string Name;
             public int Number;
-            public EPISODES(int id, string name, int[] fk, int number)
+            public string Path;
+            public EPISODES(int id, string name, int[] fk, int number, string path)
             {
                 ID = id;
                 Name = name;
                 FK = fk;
                 Number = number;
-            }
-        }
-        private struct VIDEO_FILE
-        {
-            public int ID;
-            public int[] FK;
-            public string Path;
-            public int sNumber;
-            public int eNumber;
-            public VIDEO_FILE(int id, string path, int[] fk, int snumber, int enumber)
-            {
-                ID = id;
                 Path = path;
-                FK = fk;
-                sNumber = snumber;
-                eNumber = enumber;
             }
         }
-
 
         public MainWindow()
         {
@@ -100,6 +85,8 @@ namespace WpfApplication2
 
         private void btn_SelectSource_Click(object sender, RoutedEventArgs e)
         {
+            Personal_Library.FUNCTIONS.tstFUNC();
+
             var source_dlg = new System.Windows.Forms.FolderBrowserDialog();
             source_dlg.ShowNewFolderButton = false;
             source_dlg.RootFolder = Environment.SpecialFolder.MyComputer;
@@ -476,8 +463,11 @@ namespace WpfApplication2
 
 
                 lstbox_Selected.Items.Add("SEASON");
-                lstbox_Selected.Items.Add("Name :\t" + season);
-                lstbox_Selected.Items.Add("Num :\t" + num.ToString());
+                lstbox_Selected.Items.Add("Name :\t" + tmp_SEASONS.Name);
+                lstbox_Selected.Items.Add("Num :\t" + tmp_SEASONS.Number.ToString());
+                txtbox_NumberSelected.Text = tmp_SEASONS.Number.ToString();
+                txtbox_RenameSelected.Text = tmp_SEASONS.Name;
+                txtbox_NewSelected.Text = tmp_SEASONS.Name;
 
             }
             if (type == "episode")
@@ -491,16 +481,27 @@ namespace WpfApplication2
                 txtbox_NewSelected.IsEnabled = false;
                 btnNewSelected.IsEnabled = false;
 
-                lstbox_Selected.Items.Add("EPISODE");
-                lstbox_Selected.Items.Add("Name :\t" + episode);
                 SEASONS tmp_SEASONS = findSeason(serie, season);
-                lstbox_Selected.Items.Add("Season Num :\t" + num.ToString());
                 EPISODES tmp_EPISODE = findEpisode(serie, season, episode);
-                lstbox_Selected.Items.Add("Episode Num :\t" + num.ToString());
+                VIDEO_FILE tmp_VIDEO = findVideo(serie, season, episode);
+                string stmp_NewName = GenerateNewName(tmp_VIDEO.Path, serie, tmp_SEASONS.Number, tmp_EPISODE.Number);
+
+                lstbox_Selected.Items.Add("EPISODE");
+                lstbox_Selected.Items.Add("Old Name :\t" + episode);
+                lstbox_Selected.Items.Add("New Name :\t" + stmp_NewName);
+                lstbox_Selected.Items.Add("Season Num :\t" + tmp_SEASONS.Number.ToString());
 
             }
         }
 
+        private VIDEO_FILE findVideo(string serie, string season, string episode)
+        {
+            SERIES tmp_SERIE = L_SERIES.Find(x => x.Name == serie);
+            SEASONS tmp_SEASON = L_SEASONS.Find(x => x.Name == season && x.FK == tmp_SERIE.ID);
+            EPISODES tmp_EPISODE = L_EPISODES.Find(x => x.Name == episode && x.FK[0] == tmp_SERIE.ID && x.FK[1] == tmp_SEASON.ID);
+            VIDEO_FILE tmp_VIDEO = L_VIDEO_FILE.Find(x => x.ID == tmp_EPISODE.ID);
+            return tmp_VIDEO;
+        }
         private EPISODES findEpisode(string serie, string season, string episode)
         {
             SERIES tmp_SERIE = L_SERIES.Find(x => x.Name == serie);
@@ -585,23 +586,18 @@ namespace WpfApplication2
         }
 
         /* ======================================================================================================
-         * COMMENT  btn_Rename_Click                                                                                             
+         * COMMENT                                                                                               
          * ======================================================================================================
-         * Rename the items in lstbox_NewName to the new name dispayed below old name
-         * 
-         * 
+         * Function     : btn_Rename_Click(??Create a function)
+         * Purpose      : ??????????????Rename the items in lstbox_NewName to the new name dispayed below old name
+         * Parameters   : ?
+         * Returns      : ?
          * ======================================================================================================*/
         private void btn_Rename_Click(object sender, RoutedEventArgs e)
         {
             string[] lst_items;
             string sPath;
-            lst_items = new string[lstbox_NewName.Items.Count];
-            int i = 0;
-            foreach (string item in lstbox_NewName.Items)
-            {
-                lst_items[i] = item;
-                i++;
-            }
+            lst_items = getNewNamesFromListbox();
             for (int k = 0; k < L_OLD_FILE_PATH.Count; k++)
             {
                 sPath = L_OLD_FILE_PATH[k].Remove(L_OLD_FILE_PATH[k].LastIndexOf("\\") + 1) + lst_items[k];
@@ -616,6 +612,25 @@ namespace WpfApplication2
                 }
             }
 
+        }
+        /* ======================================================================================================
+         * COMMENT                                                                                               
+         * ======================================================================================================
+         * Function     : getNewNamesFromListbox
+         * Purpose      : The functions creates a list of all names in lstbox_NewNames and return the string list
+         * Parameters   : None
+         * Returns      : string array of the list of items in lstbox_NewNames
+         * ======================================================================================================*/
+        private string[] getNewNamesFromListbox()
+        {
+            string[] result = new string[lstbox_NewName.Items.Count];
+            int i = 0;
+            foreach (string item in lstbox_NewName.Items)
+            {
+                result[i] = item;
+                i++;
+            }
+            return result;
         }
 
         private void lstbox_Episodes_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -667,6 +682,21 @@ namespace WpfApplication2
             if (lstbox_Series.SelectedIndex > -1 && lstbox_Seasons.SelectedIndex > -1)
                 UpdateSelectedView("episode", lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString(), lstbox_Episodes.SelectedItem.ToString());
 
+        }
+
+        private void btnRenameSelected_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeSeasonName(lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString());
+        }
+
+        private void ChangeSeasonName(string serie, string season)
+        {
+            SEASONS tmp_SEASONS = findSeason(serie, season);
+            int pos = L_SEASONS.IndexOf(tmp_SEASONS);
+            L_SEASONS.RemoveAt(pos);
+            tmp_SEASONS.Name = txtbox_RenameSelected.Text.ToString();
+
+            L_SEASONS.Insert(pos, tmp_SEASONS);
         }
 
 
