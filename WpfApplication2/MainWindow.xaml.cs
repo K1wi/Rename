@@ -31,7 +31,7 @@ namespace WpfApplication2
         private List<SERIES> L_SERIES = new List<SERIES>();
         private List<SEASONS> L_SEASONS = new List<SEASONS>();
         private List<EPISODES> L_EPISODES = new List<EPISODES>();
-        private List<VIDEO_FILE> L_VIDEO_FILE = new List<VIDEO_FILE>();
+        //  private List<VIDEO_FILE> L_VIDEO_FILE = new List<VIDEO_FILE>();
         private List<string> L_OLD_FILE_PATH = new List<string>();
 
 
@@ -39,10 +39,12 @@ namespace WpfApplication2
         {
             public int ID;
             public string Name;
-            public SERIES(int id, string name)
+            public string Path;
+            public SERIES(int id, string name, string path)
             {
                 ID = id;
                 Name = name;
+                Path = path;
             }
         }
         private struct SEASONS
@@ -50,24 +52,26 @@ namespace WpfApplication2
             public int ID;
             public int FK;
             public string Name;
+            public string Path;
             public int Number;
 
-            public SEASONS(int id, string name, int fk, int number)
+            public SEASONS(int id, int fk, string name, string path, int number)
             {
                 ID = id;
                 Name = name;
                 FK = fk;
+                Path = path;
                 Number = number;
             }
         }
         private struct EPISODES
         {
             public int ID;
-            public int[] FK;
+            public int FK;
             public string Name;
             public int Number;
             public string Path;
-            public EPISODES(int id, string name, int[] fk, int number, string path)
+            public EPISODES(int id, int fk, string name, string path, int number)
             {
                 ID = id;
                 Name = name;
@@ -117,7 +121,7 @@ namespace WpfApplication2
             L_SERIES.Clear();
             L_SEASONS.Clear();
             L_EPISODES.Clear();
-            L_VIDEO_FILE.Clear();
+            //L_VIDEO_FILE.Clear();
             if (Directory.Exists(path))
             {
                 ProcessSource(path);
@@ -140,7 +144,7 @@ namespace WpfApplication2
             foreach (string serie in lst_Series)
             {
                 SS_Index++;
-                L_SERIES.Add(new SERIES(SS_Index, System.IO.Path.GetFileName(serie)));  /* Add the current serie to the list */
+                L_SERIES.Add(new SERIES(SS_Index, System.IO.Path.GetFileName(serie), serie));  /* Add the current serie to the list */
 
                 string[] lst_Season_Files = Directory.GetFiles(serie);  /* Get list of all files(episodes) in current serie directory */
                 if (lst_Season_Files.Length > 0)    /* If files exist move them to season 0 directory */
@@ -153,7 +157,7 @@ namespace WpfApplication2
                 {
                     SN_Index++;
                     SN_Number++;
-                    L_SEASONS.Add(new SEASONS(SN_Index, System.IO.Path.GetFileName(season), SS_Index, SN_Number));  /* Add the current season to the list */
+                    L_SEASONS.Add(new SEASONS(SN_Index, SS_Index, System.IO.Path.GetFileName(season), season, SN_Number));  /* Add the current season to the list */
 
                     string[] lst_Episodes_Dirs = Directory.GetDirectories(season);  /* Get list of all directories(episodes_dirs) in current season directory */
                     if (lst_Episodes_Dirs.Length > 0)    /* If directories exist move all files to the current season directory */
@@ -172,10 +176,9 @@ namespace WpfApplication2
                     {
                         E_Index++;
                         E_Number++;
-                        F_Index++;
                         int[] fk = { SS_Index, SN_Index, E_Index };
-                        L_EPISODES.Add(new EPISODES(E_Index, System.IO.Path.GetFileName(episode), fk, E_Number)); /* Add the current episode to the list */
-                        L_VIDEO_FILE.Add(new VIDEO_FILE(F_Index, episode, fk, SN_Number, E_Number)); /* Add the current episode path to the list */
+                        L_EPISODES.Add(new EPISODES(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, E_Number)); /* Add the current episode to the list */
+                        // L_VIDEO_FILE.Add(new VIDEO_FILE(F_Index, episode, fk, SN_Number, E_Number)); /* Add the current episode path to the list */
                     }
 
                 }
@@ -200,9 +203,12 @@ namespace WpfApplication2
                 lstbox_Series.Items.Add(serie.Name);
             }
         }
+        /*
+         * Populate the Seasons listbox with all seasons in L_Seasons list with matching serie ID
+         * */
         private void DisplaySeasons(string serie)
         {
-            int fk = findFK(serie)[0];
+            int fk = getSerieID(serie);
             foreach (SEASONS season in L_SEASONS)
             {
                 if (season.FK == fk)
@@ -212,26 +218,32 @@ namespace WpfApplication2
         }
         private void DisplayEpisodes(string serie, string season = "?default")
         {
-            int[] fk;
+            int serie_ID = getSerieID(serie);
+            int season_ID = getSeasonID(season, serie_ID);
+
             if (season == "?default")
             {
-                fk = findFK(serie);
-                foreach (EPISODES episode in L_EPISODES)
+                foreach (SEASONS s in L_SEASONS)
                 {
-                    if (episode.FK[0] == fk[0])
+                    if (s.FK == serie_ID)
                     {
-                        lstbox_Episodes.Items.Add(episode.Name);
+                        foreach (EPISODES e in L_EPISODES)
+                        {
+                            if (e.FK == s.ID)
+                            {
+                                lstbox_Episodes.Items.Add(e.Name);
+                            }
+                        }
                     }
                 }
             }
             else
             {
-                fk = findFK(serie, season);
-                foreach (EPISODES episode in L_EPISODES)
+                foreach (EPISODES e in L_EPISODES)
                 {
-                    if (episode.FK[0] == fk[0] && episode.FK[1] == fk[1])
+                    if (e.FK == season_ID)
                     {
-                        lstbox_Episodes.Items.Add(episode.Name);
+                        lstbox_Episodes.Items.Add(e.Name);
                     }
                 }
             }
@@ -243,19 +255,29 @@ namespace WpfApplication2
         {
             L_OLD_FILE_PATH.Clear();
             int[] fk;
+            int serie_ID = getSerieID(serie);
+            int season_ID = getSeasonID(season, serie_ID);
+            int episod_ID = getEpisodeID(episode, season_ID);
+
             if (season == "?default")
             {
-                fk = findFK(serie);
-                foreach (VIDEO_FILE v_file in L_VIDEO_FILE)
+                foreach (SEASONS sn in L_SEASONS)
                 {
-                    if (v_file.FK[0] == fk[0])
+                    if (sn.FK == serie_ID)
                     {
-                        string sNewName = GenerateNewName(v_file.Path, serie, v_file.sNumber, v_file.eNumber);
-                        lstbox_NewName.Items.Add(sNewName);
-                        L_OLD_FILE_PATH.Add(v_file.Path);
+                        foreach (EPISODES ep in L_EPISODES)
+                        {
+                            if (ep.FK == )
+                            {
+                                //   string sNewName = GenerateNewName(ep.Path, serie, ep., v_file.eNumber);
+                                //   lstbox_NewName.Items.Add(sNewName);
+                                //   L_OLD_FILE_PATH.Add(v_file.Path);
+                            }
+                        }
                     }
                 }
             }
+
             else if (episode == "?default")
             {
                 fk = findFK(serie, season);
@@ -345,7 +367,42 @@ namespace WpfApplication2
             else
                 return "";
         }
+        private int getSerieID(string serie_name)
+        {
+            int result = -1;
+            foreach (SERIES s in L_SERIES)
+                if (s.Name == serie_name)
+                {
+                    result = s.ID;
+                    break;
+                }
+            return result;
+        }
 
+        private List<int> getSeasonID(string season_name, int serie_ID)
+        {
+            List<int> result = new List<int>();
+
+            foreach (SEASONS s in L_SEASONS)
+                if (s.Name == season_name && s.FK == serie_ID)
+                {
+                    result.Add(s.ID);
+                    break;
+                }
+            return result;
+        }
+
+        private int getEpisodeID(string episode_name, int season_ID)
+        {
+            int result = -1;
+            foreach (EPISODES e in L_EPISODES)
+                if (e.Name == episode_name && e.FK == season_ID)
+                {
+                    result = e.ID;
+                    break;
+                }
+            return result;
+        }
 
         /* ======================================================================================================
          * COMMENT                                                                                               
@@ -493,7 +550,7 @@ namespace WpfApplication2
 
             }
         }
-
+        /*
         private VIDEO_FILE findVideo(string serie, string season, string episode)
         {
             SERIES tmp_SERIE = L_SERIES.Find(x => x.Name == serie);
@@ -502,6 +559,7 @@ namespace WpfApplication2
             VIDEO_FILE tmp_VIDEO = L_VIDEO_FILE.Find(x => x.ID == tmp_EPISODE.ID);
             return tmp_VIDEO;
         }
+        */
         private EPISODES findEpisode(string serie, string season, string episode)
         {
             SERIES tmp_SERIE = L_SERIES.Find(x => x.Name == serie);
@@ -522,7 +580,7 @@ namespace WpfApplication2
             SERIES tmp_SERIE = L_SERIES.Find(x => x.Name == serie);
             return tmp_SERIE;
         }
-        
+
 
         private void btn_Settings_Click(object sender, RoutedEventArgs e)
         {
@@ -674,7 +732,7 @@ namespace WpfApplication2
         {
 
             if (lstbox_Series.SelectedIndex > -1)
-            UpdateSelectedView("season", lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString());
+                UpdateSelectedView("season", lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString());
         }
 
         private void lstbox_Episodes_MouseUp(object sender, MouseButtonEventArgs e)
