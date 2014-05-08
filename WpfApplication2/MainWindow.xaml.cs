@@ -215,7 +215,7 @@ namespace WpfApplication2
             foreach (string s in path)
             {
                 sName = System.IO.Path.GetFileName(s);
-                sNewPath = basePath(s) + "\\" + set_SeasonName + "0\\" + sName;
+                sNewPath = basePath(s) + "\\" + set_SeasonName + CheckSpace(set_Season1) + "0\\" + sName;
                 //  // Console.WriteLine("NAME :\t" + sName);
                 //  // Console.WriteLine("PATH :\t" + s);
                 //  // Console.WriteLine("NEW PATH :\t" + sNewPath);
@@ -1013,7 +1013,7 @@ namespace WpfApplication2
                 {
                     if (lstbox_Episodes.SelectedIndex > -1)
                     {
-                        //changeNumber(currEpisode, newNum);
+                        changeNumber(currEpisode, newNum);
                         //LOG("I know its a EPISODE");
                     }
                 }
@@ -1023,20 +1023,49 @@ namespace WpfApplication2
 
         private void changeNumber(EPISODE currEpisode, int newNum)
         {
-            throw new NotImplementedException();
+            if (lstbox_Episodes.Items.Count > 0)
+            {
+                string sBasePath = currSeason.Path + "\\";
+                int corrSNum = currSeason.Number;
+                string sNewPath;
+                string sName;
+                EPISODE newEpisode;
+
+                newEpisode = currEpisode;
+                sName = GenerateNewName(currEpisode.Path, currSerie.Name, corrSNum, newNum);
+                sNewPath = sBasePath + sName;
+                if (!System.IO.File.Exists(sNewPath))
+                {
+                    System.IO.File.Move(currEpisode.Path, sNewPath);
+                    LOG("Moved file :\t" + currEpisode.Path + "\nto :\t\t" + sNewPath);
+                    newEpisode.Path = sNewPath;
+                    newEpisode.Name = sName;
+                    newEpisode.Number = newNum;
+                    replaceListItem(currEpisode, newEpisode);
+                    currEpisode = newEpisode;
+
+                    UpdateListBoxes(currSerie.Name, currSeason.Name);
+
+                }
+                else
+                {
+                    LOG("ERORR\nThe directory '" + sNewPath + "' already exists!");
+                }
+
+            }
         }
 
         private void changeNumber(SEASON currSeason, int newNum, int index)
         {
             string sBasePath = currSeason.Path.Remove(currSeason.Path.LastIndexOf("\\") + 1);
-            string sNewPath = sBasePath + set_SeasonName + newNum.ToString();
+            string sNewPath = sBasePath + set_SeasonName + CheckSpace(set_Season1) + newNum.ToString();
             SEASON newSeason = currSeason;
             if (!System.IO.Directory.Exists(sNewPath))
             {
                 System.IO.Directory.Move(currSeason.Path, sNewPath);
                 LOG("Moved directory :\t" + currSeason.Path + "\nto :\t" + sNewPath);
                 newSeason.Path = sNewPath;
-                newSeason.Name = set_SeasonName + newNum.ToString();
+                newSeason.Name = set_SeasonName + CheckSpace(set_Season1) + newNum.ToString();
                 newSeason.Number = newNum;
                 replaceListItem(currSeason, newSeason);
                 /*   foreach (SEASON sn in getSelectedSeason(currSerie.ID))
@@ -1208,12 +1237,12 @@ namespace WpfApplication2
                     CorrNum = getSeasonNumFromName(lstbox_Seasons.Items[k].ToString());
                     if (CorrNum > 0)
                     {
-                        sNewPath = sBasePath + set_SeasonName + CorrNum.ToString();
+                        sNewPath = sBasePath + set_SeasonName + CheckSpace(set_Season1) + CorrNum.ToString();
                         sOldPath = sBasePath + lstbox_Seasons.Items[k].ToString();
                         if (sOldPath != sNewPath)
                         {
-                            System.IO.Directory.Move(sOldPath, sBasePath + set_SeasonName + CorrNum.ToString());
-                            LOG("Moved directory :\t" + sOldPath + "\nto :\t" + sBasePath + set_SeasonName + CorrNum.ToString());
+                            System.IO.Directory.Move(sOldPath, sBasePath + set_SeasonName + CheckSpace(set_Season1) + CorrNum.ToString());
+                            LOG("Moved directory :\t" + sOldPath + "\nto :\t" + sBasePath + set_SeasonName + CheckSpace(set_Season1) + CorrNum.ToString());
                         }
 
                     }
