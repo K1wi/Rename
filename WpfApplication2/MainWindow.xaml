@@ -1,7 +1,7 @@
-﻿<Window x:Class="WpfApplication2.MainWindow"
+﻿<Window x:Name="window_Main" x:Class="WpfApplication2.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="853" Width="1211" ResizeMode="CanMinimize" Activated="Window_Activated">
+        Title="MainWindow" Height="785" Width="1211" ResizeMode="CanMinimize" Activated="Window_Activated">
     <Grid Margin="0,0,0,0">
         <ListBox x:Name="lstbox_Series" HorizontalAlignment="Left" Height="319" Margin="10,112,0,0" VerticalAlignment="Top" Width="213" MouseUp="lstbox_Series_MouseUp"/>
         <Button x:Name="btn_SelectSource" Content="Select Source" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="87" Click="btn_SelectSource_Click"/>
@@ -11,38 +11,47 @@
         <Label Content="Seasons" HorizontalAlignment="Left" Margin="259,86,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
         <ListBox x:Name="lstbox_Episodes" HorizontalAlignment="Left" Height="319" Margin="463,112,0,0" VerticalAlignment="Top" Width="296" SelectionChanged="lstbox_Episodes_SelectionChanged" MouseUp="lstbox_Episodes_MouseUp"/>
         <Label Content="Episodes" HorizontalAlignment="Left" Margin="463,86,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <ListBox x:Name="lstbox_NewName" HorizontalAlignment="Left" Height="319" Margin="778,112,0,0" VerticalAlignment="Top" Width="410"/>
+        <ListBox x:Name="lstbox_NewName" HorizontalAlignment="Left" Height="319" Margin="778,112,0,0" VerticalAlignment="Top" Width="410" IsSynchronizedWithCurrentItem="True"/>
         <Label Content="New name" HorizontalAlignment="Left" Margin="778,86,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <Grid HorizontalAlignment="Left" Height="347" Margin="10,457,0,0" VerticalAlignment="Top" Width="1142">
+        <Grid HorizontalAlignment="Left" Height="259" Margin="10,457,0,0" VerticalAlignment="Top" Width="1142">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="314*"/>
                 <ColumnDefinition Width="273*"/>
-                <ColumnDefinition Width="555*"/>
+                <ColumnDefinition Width="353*"/>
+                <ColumnDefinition Width="202*"/>
             </Grid.ColumnDefinitions>
             <ListBox x:Name="lstbox_Selected" HorizontalAlignment="Left" Height="209" Margin="10,41,0,0" VerticalAlignment="Top" Width="294" IsEnabled="False" />
             <Label Content="Selected Item" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" FontWeight="Bold" Height="26" Width="94"/>
-            <StackPanel Grid.Column="1" HorizontalAlignment="Left" Height="289" Margin="63,41,0,0" VerticalAlignment="Top" Width="160">
-                <Button x:Name="btnRenameSelected" Content="Rename" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" Click="btnRenameSelected_Click"/>
-                <Button x:Name="btnDeleteSelected" Content="Delete" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" />
-                <Button x:Name="btnMoveSelected" Content="Move" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" />
-                <Button x:Name="btnNewSelected" Content="New" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22"/>
-                <Button x:Name="btnNumberSelected" Content="Number" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" />
+            <StackPanel Grid.Column="1" HorizontalAlignment="Left" Height="289" Margin="63,41,0,-71" VerticalAlignment="Top" Width="160">
+                <Button x:Name="btnRenameSelected" Content="Rename" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" Click="btnRenameSelected_Click" IsEnabled="False"/>
+                <Button x:Name="btnDeleteSelected" Content="Delete" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" Click="btnDeleteSelected_Click" IsEnabled="False" />
+                <Button x:Name="btnMoveSelected" Content="Move" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" Click="btnMoveSelected_Click" IsEnabled="False" />
+                <Button x:Name="btnNewSelected" Content="New" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" IsEnabled="False" Click="btnNewSelected_Click"/>
+                <Button x:Name="btnNumberSelected" Content="Number" HorizontalAlignment="Center" Margin="11" VerticalAlignment="Top" Width="75" Height="22" Click="btnNumberSelected_Click" IsEnabled="False" />
             </StackPanel>
-            <StackPanel Grid.Column="2" HorizontalAlignment="Left" Height="289" Margin="10,41,0,0" VerticalAlignment="Top" Width="460">
+            <StackPanel Grid.Column="2" HorizontalAlignment="Left" Height="289" Margin="10,41,0,-71" VerticalAlignment="Top" Width="460" Grid.ColumnSpan="2">
                 <Label x:Name="lbl_RenameSelected" Content="Enter new name" Margin="10,-5,205,0" HorizontalAlignment="Left" FontSize="11" FontStyle="Italic"/>
-                <TextBox x:Name="txtbox_RenameSelected" Height="23" TextWrapping="Wrap" Text="TextBox" Margin="10,-5,205,0"/>
+                <TextBox x:Name="txtbox_RenameSelected" Height="23" TextWrapping="Wrap" Text="Enter the new name" Margin="10,-5,205,0" TextChanged="txtbox_RenameSelected_TextChanged" IsEnabled="False"/>
                 <Label Content="Move to" Margin="10,38,0,0" HorizontalAlignment="Left" FontSize="11" FontStyle="Italic"/>
-                <ComboBox Height="23" Margin="10,-5,205,0"/>
+                <ComboBox x:Name="cmbobox_MoveTo" Height="23" Margin="10,-5,205,0" IsEnabled="False"/>
                 <Label x:Name="lbl_NewNameSelected" Content="Enter new name" Margin="10,2,0,0" HorizontalAlignment="Left" FontSize="11" FontStyle="Italic"/>
-                <TextBox x:Name="txtbox_NewSelected" Height="23" TextWrapping="Wrap" Text="TextBox" Margin="10,-5,205,0"/>
+                <TextBox x:Name="txtbox_NewSelected" Height="23" TextWrapping="Wrap" Text="Enter the new Serie name" Margin="10,-5,205,0" IsEnabled="False"/>
                 <Label x:Name="lbl_SeasonNumberSelected" Content="Enter season/episode number" Margin="10,2,0,0" HorizontalAlignment="Left" FontSize="11" FontStyle="Italic"/>
-                <TextBox x:Name="txtbox_NumberSelected" Height="23" TextWrapping="Wrap" Text="TextBox" Margin="10,-5,405,0"/>
+                <TextBox x:Name="txtbox_NumberSelected" Height="23" TextWrapping="Wrap" Text="0" Margin="10,-5,405,0" IsEnabled="False"/>
             </StackPanel>
-            <Button x:Name="btn_Rename" Content="RENAME SELECTED" Grid.Column="2" HorizontalAlignment="Left" Margin="446,-11,-26,0" VerticalAlignment="Top" Width="135" Height="68" FontWeight="Bold" IsEnabled="False" Click="btn_Rename_Click"/>
+            <Button x:Name="btn_Rename" Content="RENAME SELECTED" Grid.Column="3" HorizontalAlignment="Left" Margin="98,29,-31,0" VerticalAlignment="Top" Width="135" Height="68" FontWeight="Bold" IsEnabled="False" Click="btn_Rename_Click" Visibility="Hidden"/>
             <Label Content="Make changes" Grid.Column="1" HorizontalAlignment="Left" Margin="96,10,0,0" VerticalAlignment="Top" FontWeight="Bold" Height="26" Width="90"/>
         </Grid>
         <Label Content="Current source path" Margin="10,28,0,761" HorizontalAlignment="Left" FontSize="11" FontStyle="Italic"/>
-        <TextBox x:Name="txtbox_CurrentSourcePath" HorizontalAlignment="Left" Height="23" Margin="10,48,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="424" IsEnabled="False"/>
+        <TextBox x:Name="txtbox_CurrentSourcePath" HorizontalAlignment="Left" Height="23" Margin="10,48,0,0" TextWrapping="Wrap" Text="Source Path" VerticalAlignment="Top" Width="424" IsEnabled="False"/>
+        <Button x:Name="btn_Log" Content="Show Log" HorizontalAlignment="Left" Margin="1120,721,0,0" VerticalAlignment="Top" Width="75" Click="btn_Log_Click"/>
+        <ListBox x:Name="lstbox_Log" HorizontalAlignment="Left" Height="143" Margin="10,721,0,0" VerticalAlignment="Top" Width="838" Visibility="Hidden"/>
+        <Button x:Name="btn_ClearLog" Content="Clear Log" HorizontalAlignment="Left" Margin="1040,721,0,0" VerticalAlignment="Top" Width="75" Click="btn_ClearLog_Click"/>
+        <Button x:Name="btn_AutoRename" Content="Auto Rename" HorizontalAlignment="Left" Margin="259,432,0,0" VerticalAlignment="Top" Width="175" Click="btn_AutoRename_Click"/>
+        <Button x:Name="btn_AutoRename2" Content="Auto Rename" HorizontalAlignment="Left" Margin="463,432,0,0" VerticalAlignment="Top" Width="296" Click="btn_AutoRename2_Click"/>
+        <RadioButton x:Name="rdbtn_Default" Content="Default" HorizontalAlignment="Left" Margin="853,91,0,0" VerticalAlignment="Top" IsChecked="True" Checked="rdbtn_Default_Checked"/>
+        <RadioButton x:Name="rdbtn_Chron" Content="Chronological" HorizontalAlignment="Left" Margin="922,91,0,0" VerticalAlignment="Top" IsEnabled="False"/>
+
 
     </Grid>
 </Window>
