@@ -105,7 +105,12 @@ namespace WpfApplication2
             //source_dlg.
             source_dlg.RootFolder = Environment.SpecialFolder.Desktop;
             System.Windows.Forms.DialogResult result = source_dlg.ShowDialog();
+
             s_Source_Directory = source_dlg.SelectedPath;
+
+            
+
+
             /*    if (s_Source_Directory.Length <= 30)
                     txtbox_CurrentSourcePath.Width = 100;
                 else if (s_Source_Directory.Length <= 80)
@@ -115,10 +120,14 @@ namespace WpfApplication2
                 else if (s_Source_Directory.Length <= 150)
                     txtbox_CurrentSourcePath.Width = 800;
          */
-            txtbox_CurrentSourcePath.Text = s_Source_Directory;
+            if (s_Source_Directory.Contains("serie") | s_Source_Directory.Contains("Serie"))
+            {
+                txtbox_CurrentSourcePath.Text = s_Source_Directory;
 
-            Initiate_Program(s_Source_Directory);
-
+                Initiate_Program(s_Source_Directory);
+            }
+            else
+                ERROR("Please ensure the selected directory is contains yout tv shows \n Rename the source directory to Series or TV Shows");
 
         }
 
@@ -185,22 +194,30 @@ namespace WpfApplication2
                     E_Number = 0;
                     foreach (string episode in lst_Episodes)
                     {
-                        E_Index++;
-                        E_Number++;
-                        int[] fk = { SS_Index, SN_Index, E_Index };
-                        if (rdbtn_Default.IsChecked == true)
-                            L_EPISODES.Add(new EPISODE(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, getEpisodeNumFromName(episode))); /* Add the current episode to the list */
+                        //Console.WriteLine("episode :'t" + System.IO.Path.GetFileName(episode));
+                        if (System.IO.Path.GetFileName(episode).Substring(0, 1) == ".")
+                        {
+                            //Console.WriteLine(episode + " is not a valid file and was not processed");
+                        }
                         else
-                            L_EPISODES.Add(new EPISODE(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, E_Number)); /* Add the current episode to the list */
+                        {
+                            E_Index++;
+                            E_Number++;
+                            int[] fk = { SS_Index, SN_Index, E_Index };
+                            if (rdbtn_Default.IsChecked == true)
+                                L_EPISODES.Add(new EPISODE(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, getEpisodeNumFromName(episode))); /* Add the current episode to the list */
+                            else
+                                L_EPISODES.Add(new EPISODE(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, E_Number)); /* Add the current episode to the list */
 
 
-                        // L_VIDEO_FILE.Add(new VIDEO_FILE(F_Index, episode, fk, SN_Number, E_Number)); /* Add the current episode path to the list */
+                            // L_VIDEO_FILE.Add(new VIDEO_FILE(F_Index, episode, fk, SN_Number, E_Number)); /* Add the current episode path to the list */
+                        }
                     }
 
                 }
             }
             //  DisplaySeries();
-            UpdateListBoxes();
+            UpdateListBoxes(S_DEFAULT, "", "");
 
         }
 
@@ -214,22 +231,32 @@ namespace WpfApplication2
             string sName, sNewPath;
             foreach (string s in path)
             {
-                sName = System.IO.Path.GetFileName(s);
-                sNewPath = basePath(s) + "\\" + set_SeasonName + CheckSpace(set_Season1) + "0\\" + sName;
-                //  // Console.WriteLine("NAME :\t" + sName);
-                //  // Console.WriteLine("PATH :\t" + s);
-                //  // Console.WriteLine("NEW PATH :\t" + sNewPath);
-                if (!System.IO.Directory.Exists(basePath(sNewPath)))
+                //Console.WriteLine("s :\t" + System.IO.Path.GetFileName(s));
+                if (System.IO.Path.GetFileName(s).Substring(0, 1) == ".")
                 {
-                    LOG("Create :\t" + basePath(sNewPath));
-                    System.IO.Directory.CreateDirectory(basePath(sNewPath));
-                }
-                if (!System.IO.File.Exists(sNewPath))
-                {
-                    System.IO.File.Move(s, sNewPath);
-                    LOG("Moved :\t" + s + "\nto :\t" + sNewPath);
-                    //// Console.WriteLine("Moved :\t" + s + "\nto :\t" + sNewPath);
+                    //Console.Write(s + " is not a valid file and was not processed");
+                    //System.IO.File.Delete(s);
 
+                }
+                else
+                {
+                    sName = System.IO.Path.GetFileName(s);
+                    sNewPath = basePath(s) + "\\" + set_SeasonName + CheckSpace(set_Season1) + "0\\" + sName;
+                    //  // Console.WriteLine("NAME :\t" + sName);
+                    //  // Console.WriteLine("PATH :\t" + s);
+                    //  // Console.WriteLine("NEW PATH :\t" + sNewPath);
+                    if (!System.IO.Directory.Exists(basePath(sNewPath)))
+                    {
+                        LOG("Create :\t" + basePath(sNewPath));
+                        System.IO.Directory.CreateDirectory(basePath(sNewPath));
+                    }
+                    if (!System.IO.File.Exists(sNewPath))
+                    {
+                        System.IO.File.Move(s, sNewPath);
+                        LOG("Moved :\t" + s + "\nto :\t" + sNewPath);
+                        //// Console.WriteLine("Moved :\t" + s + "\nto :\t" + sNewPath);
+
+                    }
                 }
 
             }
@@ -262,9 +289,16 @@ namespace WpfApplication2
             List<SEASON> selected_seasons = new List<SEASON>();
             List<EPISODE> selected_episodes = new List<EPISODE>();
             if (serie == S_DEFAULT)
+            {
                 lstbox_Series.Items.Clear();
-            if (season == S_DEFAULT)
                 lstbox_Seasons.Items.Clear();
+                lstbox_Episodes.Items.Clear();
+            }
+            if (season == S_DEFAULT)
+            {
+                lstbox_Seasons.Items.Clear();
+                lstbox_Episodes.Items.Clear();
+            }
             if (episode == S_DEFAULT)
                 lstbox_Episodes.Items.Clear();
             lstbox_NewName.Items.Clear();
@@ -558,16 +592,16 @@ namespace WpfApplication2
          * ======================================================================================================*/
         private void lstbox_Seasons_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            lstbox_Episodes.Items.Clear();
-            lstbox_NewName.Items.Clear();
-            if (lstbox_Series.SelectedIndex >= 0 && lstbox_Seasons.SelectedIndex >= 0)
-            {
-                UpdateListBoxes(lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString());
-                // DisplayNewNames(lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString());
-            }
+            /*  lstbox_Episodes.Items.Clear();
+              lstbox_NewName.Items.Clear();
+              if (lstbox_Series.SelectedIndex >= 0 && lstbox_Seasons.SelectedIndex >= 0)
+              {
+                  UpdateListBoxes(lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString());
+                  // DisplayNewNames(lstbox_Series.SelectedItem.ToString(), lstbox_Seasons.SelectedItem.ToString());
+              }
 
-            CheckIfRenameEnable();
-
+              CheckIfRenameEnable();
+              */
         }
 
         private void UpdateSelectedView(string type, string serie, string season = S_DEFAULT, string episode = S_DEFAULT)
@@ -918,7 +952,7 @@ namespace WpfApplication2
         {
             if (lstbox_Series.SelectedIndex > -1)
             {
-                UpdateListBoxes(lstbox_Series.SelectedItem.ToString());
+                UpdateListBoxes(lstbox_Series.SelectedItem.ToString(), S_DEFAULT, "");
                 UpdateSelectedView("serie", lstbox_Series.SelectedItem.ToString());
             }
 
@@ -1074,7 +1108,7 @@ namespace WpfApplication2
                    }*/
                 currSeason = newSeason;
 
-                UpdateListBoxes(currSerie.Name);
+                UpdateListBoxes(currSerie.Name, S_DEFAULT, "");
 
             }
             else
@@ -1137,16 +1171,35 @@ namespace WpfApplication2
             //  bool foundE = false;
             //bool foundEndOfNumbers = false;
             int pos = -1;
-            // Console.WriteLine("Processing :\t" + stmp);
+            //Console.WriteLine("Processing :\t" + stmp);
             foreach (char c in stmp)
             {
                 counter++;
-                if (c.ToString() == "E" || c.ToString() == "e" || c.ToString() == "ep")
+                if (c.ToString() == "E" || c.ToString() == "e")
                 {
-                    // Console.WriteLine("Found E/e @ " + counter.ToString());
+                    //Console.WriteLine("Found :\t" + c.ToString() +" @ pos :\t" + counter.ToString());
                     pos = counter;
-                    sNum = stmp.Substring(pos + 1, 2);
-                    // Console.WriteLine("sNum :\t" + sNum);
+                    if (c.ToString() == "e")
+                    {
+                        if (stmp.Length > pos + 2)
+                        {
+                            string sep = stmp.Substring(pos, 2);
+                            //Console.WriteLine("sep:\t" + sep);
+                            if (sep == "ep")
+                                pos += 1;
+                        }
+
+                    }
+                    if (stmp.Length > pos + 2)
+                    {
+                        sNum = stmp.Substring(pos + 1, 2);
+                        //Console.WriteLine("sNum :\t" + sNum);
+                    }
+                    else
+                    {
+                      //  Console.WriteLine("Processing :\t" + stmp);
+                      //  Console.WriteLine("sNum(Not valid length) :\t" + sNum);
+                    }
                     if (int.TryParse(sNum, out iNum))
                     {
                         result = iNum;
@@ -1356,7 +1409,6 @@ namespace WpfApplication2
 
                         currEpisode = newEpisode;
 
-                        UpdateListBoxes(currSerie.Name, currSeason.Name);
 
                     }
                     else
@@ -1364,6 +1416,8 @@ namespace WpfApplication2
                         LOG("ERORR\nThe directory '" + sNewPath + "' already exists!");
                     }
                 }
+
+                UpdateListBoxes(currSerie.Name, currSeason.Name);
             }
 
         }
