@@ -108,7 +108,7 @@ namespace WpfApplication2
 
             s_Source_Directory = source_dlg.SelectedPath;
 
-            
+
 
 
             /*    if (s_Source_Directory.Length <= 30)
@@ -205,7 +205,7 @@ namespace WpfApplication2
                             E_Number++;
                             int[] fk = { SS_Index, SN_Index, E_Index };
                             if (rdbtn_Default.IsChecked == true)
-                                L_EPISODES.Add(new EPISODE(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, getEpisodeNumFromName(episode))); /* Add the current episode to the list */
+                                L_EPISODES.Add(new EPISODE(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, getEpisodeNumFromName(episode, SN_Index))); /* Add the current episode to the list */
                             else
                                 L_EPISODES.Add(new EPISODE(E_Index, SN_Index, System.IO.Path.GetFileName(episode), episode, E_Number)); /* Add the current episode to the list */
 
@@ -1147,13 +1147,15 @@ namespace WpfApplication2
             Array.Reverse(charArray);
             return new string(charArray);
         }
-        private int getEpisodeNumFromName(string sName)
+        private int getEpisodeNumFromName(string sName, int season_num = -1)
         {
             /*  int res = numFromReverseMethod(sName);
               if (res > -1)
                   return res;
               else*/
-            return numFromLookingForE(sName);
+            if (season_num == -1)
+                season_num = 9999;
+            return numFromLookingForE(sName, season_num);
 
 
 
@@ -1161,7 +1163,7 @@ namespace WpfApplication2
 
         }
 
-        private int numFromLookingForE(string sName)
+        private int numFromLookingForE(string sName, int season_num)
         {
             string sNum = "";
             string stmp = System.IO.Path.GetFileName(sName);
@@ -1175,7 +1177,7 @@ namespace WpfApplication2
             foreach (char c in stmp)
             {
                 counter++;
-                if (c.ToString() == "E" || c.ToString() == "e")
+                if (c.ToString() == "E" || c.ToString() == "e" || c.ToString() == "-")
                 {
                     //Console.WriteLine("Found :\t" + c.ToString() +" @ pos :\t" + counter.ToString());
                     pos = counter;
@@ -1190,18 +1192,27 @@ namespace WpfApplication2
                         }
 
                     }
-                    if (stmp.Length > pos + 2)
+                    if (c.ToString() == "-" && stmp.Length > pos + 3)
+                    {
+
+                        sNum = stmp.Substring(pos + 2, 2);
+                        //pos = stmp.Length;
+
+                    }
+                    else if (stmp.Length > pos + 2)
                     {
                         sNum = stmp.Substring(pos + 1, 2);
                         //Console.WriteLine("sNum :\t" + sNum);
                     }
                     else
                     {
-                      //  Console.WriteLine("Processing :\t" + stmp);
-                      //  Console.WriteLine("sNum(Not valid length) :\t" + sNum);
+                        //  Console.WriteLine("Processing :\t" + stmp);
+                        //  Console.WriteLine("sNum(Not valid length) :\t" + sNum);
                     }
                     if (int.TryParse(sNum, out iNum))
                     {
+                        if (c.ToString() == "-")
+                            Console.WriteLine("sNum in " + System.IO.Path.GetFileName(sName) + " is : " + sNum);
                         result = iNum;
                         break;
                     }
@@ -1394,7 +1405,7 @@ namespace WpfApplication2
                 {
                     currEpisode = findEpisode(currSerie.Name, currSeason.Name, lstbox_Episodes.Items[k].ToString());
                     newEpisode = currEpisode;
-                    corrENum = getEpisodeNumFromName(lstbox_Episodes.Items[k].ToString());
+                    corrENum = getEpisodeNumFromName(lstbox_Episodes.Items[k].ToString(), corrSNum);
                     sName = GenerateNewName(currEpisode.Path, currSerie.Name, corrSNum, corrENum);
                     sNewPath = sBasePath + sName;
                     if (!System.IO.File.Exists(sNewPath))
